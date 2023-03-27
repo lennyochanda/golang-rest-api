@@ -7,8 +7,10 @@ import (
 
 func SetupRoutes() {
 	router := gin.Default()
-	router.GET("/books", handlers.Fetch_books)
-	router.POST("/books", handlers.Insert_book)
+	router.GET("/books", handlers.FetchBooks)
+	router.POST("/books", handlers.InsertBook)
+
+	router.GET("/books/:id", handlers.FetchBookById)
 
 	router.Run("localhost:8080")
 }
