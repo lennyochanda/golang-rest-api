@@ -30,7 +30,7 @@ func FetchBooks(c *gin.Context) {
 		books = append(books, book)
 	}
 
-	c.IndentedJSON(http.StatusOK, books)
+	c.JSON(http.StatusOK, books)
 }
 
 func InsertBook(c *gin.Context) {
@@ -46,7 +46,7 @@ func InsertBook(c *gin.Context) {
 	
 	defer result.Close()
 
-	c.IndentedJSON(http.StatusCreated, book)
+	c.JSON(http.StatusCreated, book)
 }
 
 func FetchBookById(c *gin.Context) {	
@@ -66,5 +66,26 @@ func FetchBookById(c *gin.Context) {
 		}
 	}
 
-	c.IndentedJSON(http.StatusOK, book)
+	c.JSON(http.StatusOK, book)
+}
+
+func DeleteById(c *gin.Context) {
+	stmt, err := db.Database_connection().Prepare("DELETE FROM books WHERE isbn=?")
+
+	if err != nil {
+		panic(err.Error())
+	}
+	
+	id := c.Param("id")
+
+	result, err := stmt.Query(id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		}
+	}
+
+	defer result.Close()
+
+	c.JSON(http.StatusNoContent, gin.H{"message": "Deleted succesfully"})
 }

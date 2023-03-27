@@ -11,6 +11,7 @@ func SetupRoutes() {
 	router.POST("/books", handlers.InsertBook)
 
 	router.GET("/books/:id", handlers.FetchBookById)
+	router.DELETE("books/:id", handlers.DeleteById)
 
 	router.Run("localhost:8080")
 }
