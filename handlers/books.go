@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lennyochanda/golang-rest-api/models"
 	"github.com/lennyochanda/golang-rest-api/db"
+	"github.com/lennyochanda/golang-rest-api/models"
 )
 
 func FetchBooks(c *gin.Context) {
@@ -48,22 +49,21 @@ func InsertBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, book)
 }
 
-func FetchBookById(c *gin.Context) {
-	var book models.Book
-	id := c.Param("id")
-
-	result, err := db.Database_connection().Query("SELECT * FROM books WHERE isbn=?", id)
-
+func FetchBookById(c *gin.Context) {	
+	stmt, err := db.Database_connection().Prepare("SELECT * FROM books WHERE isbn=?")
+	
 	if err != nil {
 		panic(err.Error())
 	}
-
-	err = result.Scan(&book.ISBN, &book.Title, &book.Author, &book.Price)
 	
-	defer result.Close()
-		
-	if err != nil {
-		panic(err.Error())
+	id := c.Param("id")
+	var book models.Book
+
+	error := stmt.QueryRow(id).Scan(&book.ISBN, &book.Title, &book.Author, &book.Price); 
+	if error != nil {
+		if error == sql.ErrNoRows {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found"})
+		}
 	}
 
 	c.IndentedJSON(http.StatusOK, book)
